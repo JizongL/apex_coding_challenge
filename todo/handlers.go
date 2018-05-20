@@ -14,9 +14,9 @@ import (
 
 // Create will allow a user to create a new todo
 // The supported body is {"title": "", "status": ""}
-func Create(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func Create(db func() *sql.DB, w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer r.Body.Close()
-	if resp, err := create(openDB(), r.Body); err != nil {
+	if resp, err := create(db(), r.Body); err != nil {
 		writeErr(w, err)
 		log.Print(err)
 	} else {
@@ -65,9 +65,9 @@ func create(db *sql.DB, body io.Reader) (resp []byte, err error) {
 }
 
 // List will provide a list of all current to-dos
-func List(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+func List(db func() *sql.DB, w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
 	defer r.Body.Close()
-	if resp, err := list(openDB()); err != nil {
+	if resp, err := list(db()); err != nil {
 		writeErr(w, err)
 		log.Print(err)
 	} else {
@@ -123,9 +123,9 @@ func update(db *sql.DB, body io.Reader, idstr string) (resp []byte, err error) {
 
 	return json.Marshal(updated)
 }
-func Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+func Update(db func() *sql.DB, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
-	if resp, err := update(openDB(), r.Body, ps.ByName("id")); err != nil {
+	if resp, err := update(db(), r.Body, ps.ByName("id")); err != nil {
 		writeErr(w, err)
 		log.Print(err)
 	} else {

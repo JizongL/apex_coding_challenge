@@ -104,4 +104,5 @@ func Test_update(t *testing.T) {
 
 	_, err = update(testDB(), byteReader(updateBody), "not parsable")
 	assert.Error(t, err)
+
 }

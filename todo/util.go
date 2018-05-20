@@ -49,7 +49,7 @@ func (k key) env() (string, error) {
 	}
 	return v, nil
 }
-func openDB() *sql.DB {
+func OpenDB() *sql.DB {
 	var user, name string
 	var err error
 	if user, err = USER.env(); err != nil {
