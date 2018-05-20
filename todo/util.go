@@ -3,6 +3,7 @@ package todo
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 
@@ -32,8 +33,31 @@ func writeOKResp(w http.ResponseWriter, jsonResp []byte) {
 	fmt.Fprint(w, jsonResp)
 }
 
+type key string
+
+const (
+	USER key = "DB_USER"
+	NAME key = "DB_NAME"
+)
+
+func (k key) env() (string, error) {
+	v, ok := os.LookupEnv(string(k))
+	if !ok {
+		return "", fmt.Errorf("missing environment key $%s", k)
+	} else if v == "" {
+		return "", fmt.Errorf("empty environment key $%s", k)
+	}
+	return v, nil
+}
 func openDB() *sql.DB {
+	var user, name string
+	var err error
+	if user, err = USER.env(); err != nil {
+		log.Fatal(err)
+	} else if name, err = NAME.env(); err != nil {
+		log.Fatal(err)
+	}
 	db, _ := sql.Open("postgres",
-		fmt.Sprintf("user=%s dbname=%s sslmode=disable", os.Getenv("DB_USER"), os.Getenv("DB_NAME")))
+		fmt.Sprintf("user=%s dbname=%s sslmode=disable", user, name))
 	return db
 }

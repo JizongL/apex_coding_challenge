@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"testing"
 
 	_ "github.com/lib/pq"
@@ -94,10 +95,13 @@ func Test_update(t *testing.T) {
 	want := Todo{newTodo.ID, "update working", STATUS_IN_PROGRESS}
 	updateBody := CreateOrUpdateTodo{"update working", STATUS_IN_PROGRESS}
 
-	gotResp, err := update(testDB(), byteReader(updateBody), want.ID)
+	gotResp, err := update(testDB(), byteReader(updateBody), strconv.FormatInt(int64(want.ID), 10))
 	assert.NoError(t, err)
 
 	var got Todo
 	json.Unmarshal(gotResp, &got)
 	assert.Equal(t, want, got)
+
+	_, err = update(testDB(), byteReader(updateBody), "not parsable")
+	assert.Error(t, err)
 }

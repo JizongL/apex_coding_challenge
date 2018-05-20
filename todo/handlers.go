@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 
 	"github.com/julienschmidt/httprouter"
 )
@@ -96,13 +97,18 @@ func list(db *sql.DB) (resp []byte, err error) {
 	return json.Marshal(Todos{TodoList: todoList})
 }
 
-func update(db *sql.DB, body io.Reader, id int) (resp []byte, err error) {
+func update(db *sql.DB, body io.Reader, idstr string) (resp []byte, err error) {
 	var todo CreateOrUpdateTodo
 
 	if err = json.NewDecoder(body).Decode(&todo); err != nil {
 		return nil, BadRequestError("improperly formatted http request for 'update todo'")
 	} else if err := todo.validate(); err != nil {
 		return nil, err
+	}
+
+	id, err := strconv.ParseInt(idstr, 0, 0)
+	if err != nil {
+		return nil, BadRequestError("id was not a positive integer")
 	}
 
 	const updateStatement = `UPDATE todo SET title = $2, status = $3 WHERE id = $1;`
@@ -117,6 +123,13 @@ func update(db *sql.DB, body io.Reader, id int) (resp []byte, err error) {
 
 	return json.Marshal(updated)
 }
-func Update(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-
+func Update(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
+	defer r.Body.Close()
+	if resp, err := update(openDB(), r.Body, ps.ByName("id")); err != nil {
+		writeErr(w, err)
+		log.Print(err)
+	} else {
+		writeOKResp(w, resp)
+		log.Print(resp)
+	}
 }

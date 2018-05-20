@@ -22,7 +22,7 @@ func main() {
 	router.GET("/", Status)
 	router.POST("/todos", todo.Create)
 	router.GET("/todos", todo.List)
-
+	router.POST("/update/:id", todo.Update)
 	log.Println("Starting server...")
 
 	// Make sure you have DB_USER, DB_PASSWORD and DB_NAME environment variables set.
