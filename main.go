@@ -11,16 +11,14 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Status :=
-func Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
-	log.Println("Status Request Received")
-	w.WriteHeader(200)
-	fmt.Fprint(w, "OK\n")
+func main() {
+	_main(todo.OpenDB)
 }
 
-func withConfig(getDB func() *sql.DB, handle func(db *sql.DB, w http.ResponseWriter, r *http.Request, ps httprouter.Params)) httprouter.Handle {
+//inject DB configuration dependency into handler
+func withConfig(getDB func() *sql.DB, handle func(getDB func() *sql.DB, w http.ResponseWriter, r *http.Request, ps httprouter.Params)) httprouter.Handle {
 	return httprouter.Handle(func(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
-		handle(getDB(), w, r, ps)
+		handle(getDB, w, r, ps)
 	},
 	)
 }
@@ -38,6 +36,8 @@ func _main(db func() *sql.DB) {
 	log.Fatal(http.ListenAndServe(":8080", router))
 }
 
-func main() {
-	_main(todo.OpenDB)
+func Status(w http.ResponseWriter, r *http.Request, _ httprouter.Params) {
+	log.Println("Status Request Received")
+	w.WriteHeader(200)
+	fmt.Fprint(w, "OK\n")
 }

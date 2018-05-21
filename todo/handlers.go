@@ -21,7 +21,7 @@ func Create(db func() *sql.DB, w http.ResponseWriter, r *http.Request, _ httprou
 		log.Print(err)
 	} else {
 		writeOKResp(w, resp)
-		log.Print(resp)
+		log.Print(string(resp))
 	}
 }
 
@@ -72,7 +72,7 @@ func List(db func() *sql.DB, w http.ResponseWriter, r *http.Request, _ httproute
 		log.Print(err)
 	} else {
 		writeOKResp(w, resp)
-		log.Print(resp)
+		log.Print(string(resp))
 	}
 }
 
@@ -130,6 +130,6 @@ func Update(db func() *sql.DB, w http.ResponseWriter, r *http.Request, ps httpro
 		log.Print(err)
 	} else {
 		writeOKResp(w, resp)
-		log.Print(resp)
+		log.Print(string(resp))
 	}
 }
