@@ -12,10 +12,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+//Testmain resets the table 'todos' in the test database before and after the suite of tests
 func TestMain(m *testing.M) {
-	db := TestDB()
-	db.Exec(DROP_TODOS)
-	defer db.Exec(DROP_TODOS)
+	db := OpenTestDB()
+	db.Exec(DROP_TABLE)
+	defer db.Exec(DROP_TABLE)
 	db.Exec(RECREATE_SCHEMA)
 	os.Exit(m.Run())
 }
@@ -30,7 +31,7 @@ func byteReader(i interface{}) io.Reader {
 }
 
 func Test_create(t *testing.T) {
-	wantOK := CreateOrUpdateTodo{"working!", "New"}
+	wantOK := CreateOrUpdateTodo{"working!", STATUS_NEW}
 	badStatus := uncheckedMarshal(CreateOrUpdateTodo{"working!", "badStatus"})
 	tests := []struct {
 		name    string
@@ -44,7 +45,7 @@ func Test_create(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			gotResp, err := create(TestDB(), bytes.NewReader(tt.body))
+			gotResp, err := create(OpenTestDB(), bytes.NewReader(tt.body))
 			if (err != nil) != tt.wantErr {
 				t.Errorf("create() error = %v, wantErr %v", err, tt.wantErr)
 				return
@@ -58,28 +59,28 @@ func Test_create(t *testing.T) {
 }
 
 func Test_list(t *testing.T) {
-	got, err := list(TestDB())
+	got, err := list(OpenTestDB())
 	assert.NotNil(t, got)
 	assert.NoError(t, err)
 }
 
 func Test_update(t *testing.T) {
 
-	resp, _ := create(TestDB(), byteReader(CreateOrUpdateTodo{"update working", "New"}))
+	resp, _ := create(OpenTestDB(), byteReader(CreateOrUpdateTodo{"update working", STATUS_NEW}))
 	var newTodo Todo
 	json.Unmarshal(resp, &newTodo)
 
 	want := Todo{newTodo.ID, "update working", STATUS_IN_PROGRESS}
 	updateBody := CreateOrUpdateTodo{"update working", STATUS_IN_PROGRESS}
 
-	gotResp, err := update(TestDB(), byteReader(updateBody), strconv.FormatInt(int64(want.ID), 10))
+	gotResp, err := update(OpenTestDB(), byteReader(updateBody), strconv.FormatInt(int64(want.ID), 10))
 	assert.NoError(t, err)
 
 	var got Todo
 	json.Unmarshal(gotResp, &got)
 	assert.Equal(t, want, got)
 
-	_, err = update(TestDB(), byteReader(updateBody), "not parsable")
+	_, err = update(OpenTestDB(), byteReader(updateBody), "not parsable")
 	assert.Error(t, err)
 
 }

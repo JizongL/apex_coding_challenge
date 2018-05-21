@@ -1,5 +1,40 @@
 # Golang Coding Challenge
 
+## Installation & Configuration
+
+```bash
+go get "github.com/efronlicht/apex_coding/challenge"
+dep ensure
+```
+
+## databases:
+create a production database with the schema in `todo_schema.sql`
+set the following environment keys in your terminal configuration file (on OSX, `~/.bash_profile`)
+
+```bash
+export DB_HOST = $host 
+export DB_PASSWORD = $pass
+export DB_USER = $user
+export DB_NAME = $name
+```
+
+create a local test database with the schema in `todo_schema.sql`
+we assume no password for the test database, and that the host is localhost
+
+```bash
+export TEST_DB_NAME = $test_user
+export TEST_DB_USER = $user
+```
+create a test database with the schema in `todo_schema.sql`
+
+
+## testing
+```bash
+cd `~/$GOPATH/src/github.com/efronlicht/apex_coding_challenge`
+go test ./...
+```
+## Instructions
+
 Hi! Welcome to the Golang coding challenge. Below is a set of instructions that must attempt to complete within 3 days. Fork the repo when you're ready and good luck! 😀
 
 Within this repository, you will find a hastily thrown together application. It's a very basic, a simple To-Do API with the ability to create and list your to-dos.

@@ -34,16 +34,19 @@ func writeOKResp(w http.ResponseWriter, jsonResp []byte) {
 type key string
 
 const (
-	USER key = "DB_USER"
-	NAME key = "DB_NAME"
+	ENV_USER key = "DB_USER"
+	ENV_NAME key = "DB_NAME"
+	ENV_HOST key = "DB_HOST"
+	ENV_PASS key = "DB_PASSWORD"
+
+	ENV_TEST_USER key = "TEST_DB_USER"
+	ENV_TEST_NAME key = "TEST_DB_NAME"
 )
 
-func (k key) env() (string, error) {
+func (k key) val() (string, error) {
 	v, ok := os.LookupEnv(string(k))
 	if !ok {
 		return "", fmt.Errorf("missing environment key $%s", k)
-	} else if v == "" {
-		return "", fmt.Errorf("empty environment key $%s", k)
 	}
 	return v, nil
 }

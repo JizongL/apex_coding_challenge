@@ -42,8 +42,7 @@ func create(db *sql.DB, body io.Reader) (resp []byte, err error) {
 
 	if err = json.NewDecoder(body).Decode(&todo); err != nil {
 		return nil, BadRequestError("improperly formatted http request for 'create todo'")
-	}
-	if err := todo.validate(); err != nil {
+	} else if err = todo.validate(); err != nil {
 		return nil, err
 	}
 
@@ -78,23 +77,24 @@ func List(db func() *sql.DB, w http.ResponseWriter, r *http.Request, _ httproute
 
 //Internal implementation of List endpoint
 func list(db *sql.DB) (resp []byte, err error) {
-	todoList := []Todo{}
+	var todos []Todo
 
 	rows, err := db.Query("SELECT id, title, status FROM todo")
 	if err != nil {
 		return nil, err
 	}
+
 	defer rows.Close()
 
 	for rows.Next() {
-		todo := Todo{}
+		var todo Todo
 		if err := rows.Scan(&todo.ID, &todo.Title, &todo.Status); err != nil {
 			return nil, err
 		}
-		todoList = append(todoList, todo)
+		todos = append(todos, todo)
 	}
 
-	return json.Marshal(Todos{TodoList: todoList})
+	return json.Marshal(Todos{todos})
 }
 
 func update(db *sql.DB, body io.Reader, idstr string) (resp []byte, err error) {
@@ -111,7 +111,6 @@ func update(db *sql.DB, body io.Reader, idstr string) (resp []byte, err error) {
 		return nil, BadRequestError("id was not a positive integer")
 	}
 
-	const updateStatement = `UPDATE todo SET title = $2, status = $3 WHERE id = $1;`
 	if _, err := db.Exec(`UPDATE todo SET title = $2, status = $3 WHERE id = $1;`, id, todo.Title, todo.Status); err != nil {
 		return nil, err
 	}
@@ -123,6 +122,7 @@ func update(db *sql.DB, body io.Reader, idstr string) (resp []byte, err error) {
 
 	return json.Marshal(updated)
 }
+
 func Update(db func() *sql.DB, w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	defer r.Body.Close()
 	if resp, err := update(db(), r.Body, ps.ByName("id")); err != nil {

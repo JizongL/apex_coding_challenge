@@ -1,23 +1,25 @@
-package main
+package main_test
 
 import (
-	"apex-coding-challenge/todo"
 	"bytes"
 	"encoding/json"
 	"net/http"
 	"testing"
 	"time"
 
+	challenge "github.com/efronlicht/apex_coding_challenge"
+	"github.com/efronlicht/apex_coding_challenge/todo"
+
 	"github.com/stretchr/testify/assert"
 )
 
 func Test_Main(t *testing.T) {
-	db := todo.TestDB()
-	db.Exec(todo.DROP_TODOS)
-	defer db.Exec(todo.DROP_TODOS)
+	db := todo.OpenTestDB()
+	db.Exec(todo.DROP_TABLE)
+	defer db.Exec(todo.DROP_TABLE)
 	db.Exec(todo.RECREATE_SCHEMA)
 
-	go _main(todo.TestDB)
+	go challenge.Main(todo.OpenTestDB)
 	time.Sleep(100 * time.Millisecond)
 
 	//create some item on a blank database: we know it's item #1
